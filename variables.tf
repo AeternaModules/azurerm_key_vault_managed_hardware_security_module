@@ -27,11 +27,11 @@ EOT
     resource_group_name                       = string
     sku_name                                  = string
     tenant_id                                 = string
-    public_network_access_enabled             = optional(bool, true)
+    public_network_access_enabled             = optional(bool) # Default: true
     purge_protection_enabled                  = optional(bool)
     security_domain_key_vault_certificate_ids = optional(list(string))
     security_domain_quorum                    = optional(number)
-    soft_delete_retention_days                = optional(number, 90)
+    soft_delete_retention_days                = optional(number) # Default: 90
     tags                                      = optional(map(string))
     network_acls = optional(object({
       bypass         = string
