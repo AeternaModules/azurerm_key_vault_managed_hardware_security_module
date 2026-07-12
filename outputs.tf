@@ -1,3 +1,7 @@
+output "key_vault_managed_hardware_security_modules_id" {
+  description = "Map of id values across all key_vault_managed_hardware_security_modules, keyed the same as var.key_vault_managed_hardware_security_modules"
+  value       = { for k, v in azurerm_key_vault_managed_hardware_security_module.key_vault_managed_hardware_security_modules : k => v.id }
+}
 output "key_vault_managed_hardware_security_modules_admin_object_ids" {
   description = "Map of admin_object_ids values across all key_vault_managed_hardware_security_modules, keyed the same as var.key_vault_managed_hardware_security_modules"
   value       = { for k, v in azurerm_key_vault_managed_hardware_security_module.key_vault_managed_hardware_security_modules : k => v.admin_object_ids }
