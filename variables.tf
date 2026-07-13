@@ -27,49 +27,17 @@ EOT
     resource_group_name                       = string
     sku_name                                  = string
     tenant_id                                 = string
-    public_network_access_enabled             = optional(bool) # Default: true
+    public_network_access_enabled             = optional(bool)
     purge_protection_enabled                  = optional(bool)
     security_domain_key_vault_certificate_ids = optional(list(string))
     security_domain_quorum                    = optional(number)
-    soft_delete_retention_days                = optional(number) # Default: 90
+    soft_delete_retention_days                = optional(number)
     tags                                      = optional(map(string))
     network_acls = optional(object({
       bypass         = string
       default_action = string
     }))
   }))
-  validation {
-    condition = alltrue([
-      for k, v in var.key_vault_managed_hardware_security_modules : (
-        can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", v.admin_object_ids))
-      )
-    ])
-    error_message = "must be a valid UUID"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.key_vault_managed_hardware_security_modules : (
-        can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", v.tenant_id))
-      )
-    ])
-    error_message = "must be a valid UUID"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.key_vault_managed_hardware_security_modules : (
-        v.soft_delete_retention_days == null || (v.soft_delete_retention_days >= 7 && v.soft_delete_retention_days <= 90)
-      )
-    ])
-    error_message = "must be between 7 and 90"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.key_vault_managed_hardware_security_modules : (
-        v.security_domain_quorum == null || (v.security_domain_quorum >= 2 && v.security_domain_quorum <= 10)
-      )
-    ])
-    error_message = "must be between 2 and 10"
-  }
   # --- Unconfirmed validation candidates, derived from azurerm_key_vault_managed_hardware_security_module's provider source ---
   # Not auto-enabled: either a bespoke provider validator we can't safely translate,
   # or a path that crosses a list-typed block (needs its own for_each wrapping).
@@ -96,6 +64,15 @@ EOT
   #   source:    location.EnhancedValidate: no recognizable `if ... { errors = append(...) }` pattern - read it by hand
   # path: sku_name
   #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
+  # path: admin_object_ids[*]
+  #   condition: can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", value))
+  #   message:   must be a valid UUID
+  # path: tenant_id
+  #   condition: can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", value))
+  #   message:   must be a valid UUID
+  # path: soft_delete_retention_days
+  #   condition: value >= 7 && value <= 90
+  #   message:   must be between 7 and 90
   # path: network_acls.default_action
   #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
   # path: network_acls.bypass
@@ -104,6 +81,9 @@ EOT
   #   source:    [from keyvault.ValidateNestedItemID] !ok
   # path: security_domain_key_vault_certificate_ids[*]
   #   source:    [from keyvault.ValidateNestedItemID] err != nil
+  # path: security_domain_quorum
+  #   condition: value >= 2 && value <= 10
+  #   message:   must be between 2 and 10
   # path: tags
   #   condition: length(value) <= 50
   #   message:   [from tags.Validate: invalid when len(value) > 50]
